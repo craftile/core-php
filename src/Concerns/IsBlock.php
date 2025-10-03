@@ -74,6 +74,14 @@ trait IsBlock
     }
 
     /**
+     * Get preview image URL from static property.
+     */
+    public static function previewImageUrl(): ?string
+    {
+        return static::$previewImageUrl ?? null;
+    }
+
+    /**
      * Get block properties from static property.
      */
     public static function properties(): array
@@ -103,5 +111,13 @@ trait IsBlock
     public static function category(): string
     {
         return static::$category ?? '';
+    }
+
+    /**
+     * Get block presets from static property.
+     */
+    public static function presets(): array
+    {
+        return static::$presets ?? [];
     }
 }
