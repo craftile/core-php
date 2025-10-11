@@ -59,11 +59,55 @@ class BlockSchema implements JsonSerializable
         $this->icon = $icon;
         $this->category = $category;
         $this->properties = $properties;
-        $this->accepts = $accepts;
+        $this->accepts = static::normalizeAccepts($accepts);
         $this->wrapper = $wrapper;
         $this->previewImageUrl = $previewImageUrl;
-        $this->presets = $presets;
+        $this->presets = static::normalizePresets($presets);
         $this->private = $private;
+    }
+
+    /**
+     * Normalize accepts array by converting class names to block types.
+     *
+     * @param  array  $accepts  Raw accepts array (may contain class names)
+     * @return array Normalized accepts array (only type strings and '*')
+     */
+    protected static function normalizeAccepts(array $accepts): array
+    {
+        return array_map(function ($item) {
+            // If it's a class that exists and implements BlockInterface
+            if (is_string($item) && class_exists($item)) {
+                if (is_subclass_of($item, BlockInterface::class)) {
+                    // Get the type from the class
+                    return $item::type();
+                }
+            }
+
+            // Otherwise return as-is (type string or '*')
+            return $item;
+        }, $accepts);
+    }
+
+    /**
+     * Normalize presets array by converting class names to instances.
+     *
+     * @param  array  $presets  Raw presets array (may contain class names, instances, or arrays)
+     * @return array Normalized presets array (instances and arrays)
+     */
+    protected static function normalizePresets(array $presets): array
+    {
+        return array_map(function ($item) {
+            // If it's a class string that exists and extends BlockPreset
+            if (is_string($item) && class_exists($item)) {
+                if (is_subclass_of($item, BlockPreset::class)) {
+                    // Call ::make() to instantiate (name will be auto-derived)
+                    return $item::make();
+                }
+            }
+
+            // Otherwise return as-is (BlockPreset instance or array)
+            return $item;
+        }, $presets);
     }
 
     /**
