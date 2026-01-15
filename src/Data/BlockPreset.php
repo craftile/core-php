@@ -53,20 +53,18 @@ class BlockPreset implements JsonSerializable
     {
         $class = (new \ReflectionClass(static::class))->getShortName();
 
-        // Remove "Preset" suffix if present
         $class = preg_replace('/Preset$/', '', $class);
 
-        // Convert PascalCase to spaces (e.g., "RichText" -> "Rich Text")
         $words = preg_replace('/(?<!^)[A-Z]/', ' $0', $class);
 
         return trim($words);
     }
 
     /**
-     * Get block type for asChild() method.
-     * Can be overridden in subclasses to provide a default type.
+     * Get the block type this preset belongs to.
+     * Override in subclasses to specify the target block type for discovery.
      */
-    protected function getType(): ?string
+    public static function getType(): ?string
     {
         return null;
     }
@@ -217,8 +215,7 @@ class BlockPreset implements JsonSerializable
     {
         $instance = new static;
 
-        // Priority: param > getType() > exception
-        $blockType = $type ?? $instance->getType();
+        $blockType = $type ?? static::getType();
 
         if ($blockType === null) {
             throw new \LogicException(
